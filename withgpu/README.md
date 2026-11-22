@@ -1,7 +1,6 @@
-# WSL2 + Intel Arc GPU: run your process / LLM on the GPU and use it from Docker
+# WSL2 + Intel Arc GPU: LLM on the GPU and use it from Docker
 
-Step-by-step guide for setting up an Intel Arc GPU (the integrated graphics of your PC) so you can
-run LLMs and other processes on it from WSL2 (Ubuntu) and from Docker containers.
+Step-by-step guide for setting up an Intel Arc GPU. So you can run LLMs and other processes on it from WSL2 (Ubuntu) and from Docker containers.
 
 Reference machine this was written on:
 
@@ -45,9 +44,6 @@ crw-rw-rw- 1 root root 10, 258 ... /dev/dxg
 
 `/dev/dxg` is how the Arc GPU is reached from WSL2.
 
-> Note: there is no `/dev/dri` on this WSL2 (it is a native-Linux device node). That matters for the
-> Docker section — see the "recommended" option there.
-
 ### 1.3 WSL side — build tools
 
 ```sh
@@ -55,25 +51,22 @@ sudo apt update
 sudo apt install -y build-essential cmake ninja-build clinfo
 ```
 
-(`cmake` and `ninja` are needed to build llama.cpp below; `clinfo` helps on native Linux.)
-
-### 1.4 WSL side — Intel oneAPI Base Toolkit (the user-space stack for the Arc)
+### 1.4 WSL side — Intel oneAPI Base Toolkit
 
 This provides the Level Zero runtime, the `icx`/`icpx` SYCL compilers, and oneDNN/oneMKL, which
 llama.cpp needs to run on Intel GPUs.
 
-Option A — install from the Intel page:
-
-- Open the [Intel oneAPI Toolkit download page](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
-  and install **Intel oneAPI Base Toolkit for Ubuntu 24.04 (x86_64)** (default install path
-  `/opt/intel/oneapi`).
-
-Option B — install from the Intel apt repository:
+Install from the Intel apt repository:
 
 ```sh
-echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneapi.list
-sudo apt update
-sudo apt install -y intel-oneapi-base-toolkit
+Reference: - Reference: [Intel oneAPI Toolkit download page](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
+
+# download the key to system keyring
+wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+| gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+# add signed entry to apt sources and configure the APT client to use Intel repository:
+echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 ```
 
 Optional for native Linux driver debugging:
@@ -104,15 +97,7 @@ re-logged in (or restarted).
 
 ## 2. Docker installation inside the WSL (Ubuntu 24.04)
 
-### 2.1 Option A — Ubuntu's Docker Engine (simplest)
-
-```sh
-sudo apt update
-sudo apt install -y docker.io
-sudo service docker start
-```
-
-### 2.2 Option B — Docker Engine from Docker's repository (recommended)
+### 2.1 Option B — Docker Engine from Docker's repository (recommended)
 
 ```sh
 sudo apt install -y ca-certificates curl
@@ -124,26 +109,19 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io
 sudo service docker start
 ```
 
-### 2.3 Option C — Docker Desktop for Windows (alternative)
-
-- Install Docker Desktop for Windows; it runs a WSL2-backed daemon.
-- The `docker` command then works inside your WSL.
-
-### 2.4 Allow your user to run Docker (no sudo)
+### 2.2 Allow your user to run Docker (no sudo)
 
 ```sh
 sudo usermod -aG docker $USER
 # Close and reopen this terminal, or run: newgrp docker
 ```
 
-### 2.5 Verify
+### 2.3 Verify
 
 ```sh
 docker --version
 docker run --rm hello-world
 ```
-
-(The first `hello-world` run pulls the image; you should see "Hello from Docker!".)
 
 ---
 
