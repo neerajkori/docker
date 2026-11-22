@@ -2,16 +2,42 @@
 
 Step-by-step guide for setting up an Intel Arc GPU. So you can run LLMs and other processes on it from WSL2 (Ubuntu) and from Docker containers.
 
-Reference machine this was written on:
+System & WSL2 Architecture Graph: 
 
-- Host: `IN-CS7MR24`
-- Manufacturer / Model: `Dell Inc. / Dell Pro 14 PC14250`
-- CPU: `Intel64 Family 6 Model 181 Stepping 0 GenuineIntel` (~2000 MHz, 64-bit)
-- GPU: Intel Arc integrated graphics (this is the "GPU" on this PC — it shares system RAM)
-- Windows: Microsoft Windows 11 Enterprise, 10.0.26200 (build 26200)
-- RAM: ~15,829 MB total (~5,048 MB available when captured)
-- WSL2 (this instance): Ubuntu 24.04.5 LTS, kernel 6.18.33.2-microsoft-standard-WSL2, gcc 13.3.0
-- Docker Engine inside this WSL: 29.10.0
+### Reference Environment
+
+```text
+┌─[ IN-CS7MR24 ]─────────────────────────────────[ Dell Pro 14 PC14250 ]─┐
+│                                                                        │
+│  ┌─ HARDWARE ───────────────────────────────────────────────────────┐  │
+│  │  CPU : Intel64 Family 6 Model 181 Stepping 0 (~2000 MHz, 64-bit) │  │
+│  │  GPU : Intel Arc Integrated Graphics [Shared System RAM]         │  │
+│  │  RAM : 10,781 MB / 15,829 MB  [■■■■■■■■■■■■■■■■■□□□□□□□]  68.1%  │  │
+│  │        └─ Free at capture: ~5,048 MB (31.9%)                      │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                   │                                    │
+│                                   ▼                                    │
+│  ┌─ HOST OS ────────────────────────────────────────────────────────┐  │
+│  │  OS     : Microsoft Windows 11 Enterprise                        │  │
+│  │  Build  : 10.0.26200 (Build 26200)                               │  │
+│  │  Bridge : Windows Display Driver (/dev/dxg -> WSL2)              │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                   │                                    │
+│                                   ▼                                    │
+│  ┌─ VIRTUALIZATION & RUNTIME ───────────────────────────────────────┐  │
+│  │  Hypervisor : WSL 2 Utility VM                                   │  │
+│  │  Kernel     : 6.18.33.2-microsoft-standard-WSL2                  │  │
+│  │                                                                  │  │
+│  │  ┌─ UBUNTU 24.04.5 LTS ───────────────────────────────────────┐  │  │
+│  │  │  ● Status   : Active                                       │  │  │
+│  │  │  ● Compiler : gcc 13.3.0                                   │  │  │
+│  │  │  ● Engine   : Docker 29.10.0                               │  │  │
+│  │  └────────────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                                                        │
+└─[ RAM: 68.1% ]──[ Arch: x86_64 ]──[ Env: WSL2 + Docker ]───────────────┘
+```
+
 
 The same steps apply on any Ubuntu 24.04 WSL2 on Intel Core Ultra-class machines.
 
